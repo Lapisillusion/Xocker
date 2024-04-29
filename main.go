@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"syscall"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -44,7 +44,7 @@ func cGroups() {
 			os.Exit(1)
 		}
 		// 得到 fork 出来的进程在外部namespace 的 pid
-		fmt.Println("fork 进程 go get github.com/urfave/cli/v2PID：", cmd.Process.Pid)
+		fmt.Println("fork 进程 go get PID：", cmd.Process.Pid)
 		// 在默认的 memory cgroup 下创建子目录，即创建一个子 cgroup
 
 		err := os.Mkdir(filepath.Join(cgroupMemoryHierarchyMount, "testmemorylimit"), 0755)
@@ -128,7 +128,28 @@ func urfaveCli() {
 	}
 }
 
+const usage = `Xocker is a simple container runtime implementation.`
+
 func main() {
+	app := cli.NewApp()
+	app.Name = "Xocker"
+	app.Usage = usage
+
+	app.Commands = []cli.Command{
+		initCommand,
+		runCommand,
+	}
+
+	app.Before = func(context *cli.Context) error {
+		// Log as JSON instead of the default ASCII formatter.
+		log.SetFormatter(&log.JSONFormatter{})
+
+		log.SetOutput(os.Stdout)
+		return nil
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 	//cGroups()
-	urfaveCli()
 }
