@@ -31,7 +31,7 @@ var runCommand = cli.Command{
 		}
 		cmd := context.Args().Get(0)
 		tty := context.Bool("it")
-		Run(tty, cmd)
+		Run(tty, []string{cmd})
 		return nil
 	},
 }
