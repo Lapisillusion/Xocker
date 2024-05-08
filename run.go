@@ -4,6 +4,8 @@ import (
 	"os"
 	"strings"
 
+	"Xocker/cgroups"
+	"Xocker/cgroups/subsystems"
 	"Xocker/container"
 
 	log "github.com/sirupsen/logrus"
@@ -15,7 +17,7 @@ import (
 进程，然后在子进程中，调用/proc/self/exe,也就是调用自己，发送init参数，调用我们写的init方法，
 去初始化容器的一些资源。
 */
-func Run(tty bool, comArray []string) {
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 	parent, writePipe := container.NewParentProcess(tty)
 	if parent == nil {
 		log.Errorf("New parent process error")
@@ -24,7 +26,14 @@ func Run(tty bool, comArray []string) {
 	if err := parent.Start(); err != nil {
 		log.Errorf("Run parent.Start err:%v", err)
 	}
-	// 在子进程创建后通过管道来发送参数
+	// 创建cgroup manager, 并通过调用set和apply设置资源限制并使限制在容器上生效
+	cgroupManager := cgroups.NewCgroupManager("Xocker-cgroup")
+	defer cgroupManager.Destroy()
+	defer container.DeleteWorkSpace("/root/")
+	_ = cgroupManager.Set(res)
+	_ = cgroupManager.Apply(parent.Process.Pid, res)
+
+	// 在子进程创建后才能通过pipe来发送参数
 	sendInitCommand(comArray, writePipe)
 	_ = parent.Wait()
 }
