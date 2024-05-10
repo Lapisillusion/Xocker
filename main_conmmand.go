@@ -31,6 +31,10 @@ var runCommand = cli.Command{
 			Name:  "cpuset",
 			Usage: "cpuset limit,e.g.: -cpuset 2,4", // 限制进程 cpu 使用率
 		},
+		cli.StringFlag{
+			Name:  "v",
+			Usage: "volume,e.g.: -v /ect/conf:/etc/conf",
+		},
 	},
 	/*career.buaa.edu.cn
 	这里是run命令执行的真正函数。
@@ -53,9 +57,12 @@ var runCommand = cli.Command{
 			CpuSet:      context.String("cpuset"),
 			CpuCfsQuota: context.Int("cpu"),
 		}
+
+		volume := context.String("v")
+
 		log.Info("resConf:", resConf)
 
-		Run(tty, cmdArray, resConf)
+		Run(tty, cmdArray, resConf, volume)
 		return nil
 	},
 }
@@ -65,7 +72,7 @@ var initCommand = cli.Command{
 	Usage: "Init container process run user's process in container. Do not call it outside",
 	/*
 		1.获取传递过来的 command 参数
-		2.执行容器初始化操作
+		2.执行容器初始化操作tVolume(mntPath, target)
 	*/
 	Action: func(context *cli.Context) error {
 		log.Infof("Xocker init...")
