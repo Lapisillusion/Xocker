@@ -68,8 +68,8 @@ func NewWorkSpace(rootPath string, volume string) {
 // createLower 将busybox作为overlayfs的lower层
 func createLower(rootPath string) {
 	// 把busybox作为overlayfs中的lower层
-	busyboxPath := path.Join(rootPath, "busybox")
-	busyboxTarPath := path.Join(rootPath, "busybox.tar")
+	busyboxPath := path.Join(rootPath, "ubuntu")
+	busyboxTarPath := path.Join(rootPath, "ubuntu.tar")
 	log.Infof("busybox:%s busybox.tar:%s", busyboxPath, busyboxTarPath)
 	// 检查是否已经存在busybox文件夹
 	exist, err := PathExists(busyboxPath)
@@ -106,7 +106,7 @@ func createDirs(rootPath string) {
 func mountOverlayFS(rootPath string) {
 	// 拼接参数
 	// e.g. lowerdir=/root/busybox,upperdir=/root/upper,workdir=/root/work
-	dirs := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", path.Join(rootPath, "busybox"),
+	dirs := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", path.Join(rootPath, "ubuntu"),
 		path.Join(rootPath, "upper"), path.Join(rootPath, "work"))
 
 	// 完整命令：mount -t overlay overlay -o lowerdir=/root/busybox,upperdir=/root/upper,workdir=/root/work /root/merged

@@ -19,7 +19,6 @@ import (
 */
 func RunContainerInitProcess(command string, args []string) error {
 	// mount /proc 文件系统
-	mountProc()
 
 	// 从 pipe 中读取命令
 	cmdArray := readUserCommand()
@@ -32,6 +31,12 @@ func RunContainerInitProcess(command string, args []string) error {
 		return err
 	}
 	log.Infof("Find path %s", path)
+
+	if err := syscall.Chroot("/root/merged"); err != nil {
+		log.Error("Error changing root filesystem:", err)
+		return err
+	}
+	mountProc()
 	if err = syscall.Exec(path, cmdArray, os.Environ()); err != nil {
 		log.Errorf("RunContainerInitProcess exec :" + err.Error())
 	}
