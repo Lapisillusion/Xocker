@@ -19,6 +19,10 @@ var runCommand = cli.Command{
 			Name:  "it", // 简单起见，这里把 -i 和 -t 参数合并成一个
 			Usage: "enable tty",
 		},
+		cli.BoolFlag{
+			Name:  "d",
+			Usage: "detach container",
+		},
 		cli.StringFlag{
 			Name:  "mem", // 限制进程内存使用量，为了避免和 stress 命令的 -m 参数冲突 这里使用 -mem,到时候可以看下解决冲突的方法
 			Usage: "memory limit,e.g.: -mem 100m",
@@ -52,6 +56,12 @@ var runCommand = cli.Command{
 		}
 
 		tty := context.Bool("it")
+		detach := context.Bool("d")
+
+		if tty && detach {
+			return fmt.Errorf("it and d paramter can not both provided")
+		}
+
 		resConf := &subsystems.ResourceConfig{
 			MemoryLimit: context.String("mem"),
 			CpuSet:      context.String("cpuset"),
